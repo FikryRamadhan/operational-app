@@ -1,0 +1,4 @@
+*
+!.gitignore
+!temp_files
+!transaction_proof
