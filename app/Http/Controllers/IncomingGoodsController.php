@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\IncomingGood;
 use App\Models\incomingGoodDetail;
-use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
@@ -13,7 +12,6 @@ use App\MyClass\Validations;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use PHPUnit\Framework\Constraint\Count;
 
 class IncomingGoodsController extends Controller
 {
@@ -50,6 +48,7 @@ class IncomingGoodsController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request);
         Validations::storeIncomingGoods($request);
         DB::beginTransaction();
 
@@ -80,7 +79,7 @@ class IncomingGoodsController extends Controller
             // For Product,warehouseStock, and Product=Stock
             $idIncomingGood = $incomingGood->id;
             $amount = $request->amount;
-
+            $filePhoto = $request->file_photo;
 
             // Warehouse Stock/IncomingGoods/IdProduct
             for ($i = 0; $i < count($idProduct); $i++) {
@@ -94,18 +93,15 @@ class IncomingGoodsController extends Controller
                     'idProduct' => $idProduct[$i],
                     'amount' => $amount[$i],
                 ];
-                $dataStockProduct = [
-                    'idProduct' => $idProduct[$i],
-                    'stock' => $amount[$i],
-                ];
-
-                // Product::storeStockProduct($dataStockProduct);
+                
                 WarehouseStock::storeWarehouseStock($dataWarehouse);
-                $incomingGoodDetail = incomingGoodDetail::storeIncomingGoodDetail($dataIncomingGoodDetail);
+                $incomingGoodDetail = IncomingGoodDetail::storeIncomingGoodDetail($dataIncomingGoodDetail);
+                if($request->file('file_photo')) {
+                    if(isset($filePhoto[$i])){
+                        $incomingGoodDetail->saveFile($filePhoto[$i]);
+                    }
+                }
                 $incomingGoodDetail->product->perhitunganUlangStockProduct();
-                // $product = Product::where('id', $idProduct[$i])->first();
-                // $product->perhitunganUlangStockProduct();
-
             }
             DB::commit();
 
@@ -138,12 +134,12 @@ class IncomingGoodsController extends Controller
 
     public function update(Request $request, IncomingGood $incomingGoods)
     {
+        // dd($request);
         Validations::storeIncomingGoods($request, $incomingGoods->id);
         DB::beginTransaction();
         
         try{
             $idWarehouse = $request->id_warehouse;
-            $amount = $request->amount;
             
             $incomingGoods->updateIncomingGoods([
                 'id_warehouse' => $idWarehouse,
@@ -152,45 +148,6 @@ class IncomingGoodsController extends Controller
                 'total_amount' => $request->total_amount,
                 'description' => $request->description,
             ]);
-
-            foreach ($incomingGoods->incomingGoodDetail as $key => $incomingGoodDetails) {
-                $warehouseStock = WarehouseStock::where('id_warehouse', $idWarehouse)->where('id_product', $incomingGoodDetails->id_product)->first();
-                $warehouseStock->update([
-                    'stock' => $warehouseStock->stock - $incomingGoodDetails->amount
-                ]);
-
-                $incomingGoodDetails->product->perhitunganUlangStockProduct();
-            }
-
-            incomingGoodDetail::where('id_incoming_good', $incomingGoods->id)->delete();
-
-            // For Product Dan Incoming Goods
-            $idProduct = $request->id_product;
-            $idIncomingGood = $incomingGoods->id;
-
-            for($i = 0; $i < count($idProduct); $i++ ){
-                $warehouseStock = WarehouseStock::where('id_warehouse', $idWarehouse)->where('id_product', $idProduct[$i])->first();
-                if($warehouseStock){
-                    $warehouseStock->update([
-                        'stock' => $warehouseStock->stock + $amount[$i]
-                    ]);
-                }else{
-                    WarehouseStock::storeWarehouseStock([
-                        'idWarehouse' => $idWarehouse,
-                        'idProduct' => $idProduct[$i],
-                        'stock' => $amount[$i],
-                    ]);
-                }
-
-                $dataIncomingGoodDetail = [
-                    'idIncomingGood' => $idIncomingGood,
-                    'idProduct' => $idProduct[$i],
-                    'amount' => $amount[$i],
-                ];
-
-                $incomingGoodDetail = incomingGoodDetail::storeIncomingGoodDetail($dataIncomingGoodDetail);
-                $incomingGoodDetail->product->perhitunganUlangStockProduct();
-            }
 
             DB::commit();
 

@@ -187,7 +187,7 @@
                     .trigger('change')
                 $formUpdate.find(`[name="total_amount"]`).val("{{ $stockAdjustment->total_amount }}")
                     .trigger('change')
-                $formUpdate.find(`[name="description"]`).val("{{ $stockAdjustment->description }}")
+                $formUpdate.find(`[name="description"]`).val(`{{ $stockAdjustment->description }}`)
                     .trigger('change')
             })
 

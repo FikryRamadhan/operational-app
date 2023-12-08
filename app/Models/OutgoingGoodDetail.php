@@ -21,6 +21,52 @@ class OutgoingGoodDetail extends Model
         return $this->belongsTo(Product::class, 'id_product');
     }
 
+    // Upload Photo To Storage
+    public function productFilePath()
+	{
+		return storage_path('app/public/outgoing_good/'.$this->file_photo);
+	}
+
+    public function isHasProductPhoto()
+	{
+		if(empty($this->file_photo)) return false;
+		return \File::exists($this->productFilePath());
+	}
+
+	public function removePhoto()
+	{
+		if($this->isHasProductPhoto()) {
+			\File::delete($this->productFilePath());
+			$this->update([
+				'file_photo' => null
+			]);
+		}
+
+		return $this;
+	}
+
+	public function saveFile($file)
+	{
+		if($file) {
+			$this->removePhoto();
+			$filename = date('YmdHis_').rand(100,999)."_".$file->getClientOriginalName();
+            $imageUrl = $file;
+            $filePath = 'outgoing_good/'.$filename;
+            $deleteImageAfter = false;
+
+            $image = new \App\MyClass\ImageHelper($imageUrl, $filePath, $deleteImageAfter);
+
+            $imageWidth = 1080;
+            $image->compressImage($imageWidth)
+            ->saveImage();
+			$this->update([
+				'file_photo' => $filename,
+			]);
+		}
+
+		return $this;
+	}
+
     // Method Action
     public static function storeOutgoingGoodDetail(array $data)
     {
@@ -35,10 +81,16 @@ class OutgoingGoodDetail extends Model
         ]);
     }
 
+    public function updateOutgoingGoodDetail($request)
+    {
+        return $this->update($request);
+    }
+
     public function deleteOutgoinGoodDetail()
     {
         $this->removeStockProduct();
         $this->removeStockWarehouse();
+        $this->removePhoto();
         $this->delete();
         return $this;
     }

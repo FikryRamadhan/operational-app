@@ -108,6 +108,10 @@ class OutgoingGood extends Model
     public function removeOutgoingGoodDetails()
     {
         OutgoingGoodDetail::where('id_outgoing_good', $this->id)->delete();
+        foreach ($this->outGoingGoodDetail as $key => $outGoingGoodD) {
+            $outGoingGoodD->removePhoto();
+            $outGoingGoodD->delete();
+        }
         return $this;
     }
     
@@ -144,7 +148,7 @@ class OutgoingGood extends Model
             ';
                 return $action;
             })
-            ->editColumn('date', function ($data) {
+            ->editColumn('date', function($data){
                 return $data->date->format('d F y');
             })
             ->editColumn('warehouse.warehouse_name', function ($data) {

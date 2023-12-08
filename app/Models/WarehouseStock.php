@@ -27,6 +27,11 @@ class WarehouseStock extends Model
     {
         return $this->warehouse ? $this->warehouse->warehouse_name : "-";
     }
+
+    public function getProductType(){
+        $product = $this->product;
+        return $product->productType ? $product->productType->product_type_name : "-";
+    }
     public function getProduct()
     {
         return $this->product ? $this->product->product_name : "-";

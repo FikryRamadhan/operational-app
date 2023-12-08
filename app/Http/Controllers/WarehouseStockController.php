@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
+use PDF;
 use Illuminate\Http\Request;
 
 class WarehouseStockController extends Controller
@@ -37,6 +38,14 @@ class WarehouseStockController extends Controller
                 ]
 			]
 		]);
+    }
+
+    public function export(Warehouse $warehouse) {
+        $pdf = \PDF::loadview('warehouse.export', [
+            'warehouse' => $warehouse,
+        ])->setPaper('a4', 'Portrait');
+
+        return $pdf->download('Stok Gudang '.$warehouse->warehouse_name.'.pdf');
     }
 
 }

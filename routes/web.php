@@ -129,7 +129,7 @@ Route::group([ 'middleware' => 'auth' ], function(){
 	Route::prefix('warehouse_stock')->group(function(){
 		Route::get('/', [WarehouseStockController::class, 'index'])->name('warehouse_stock');
 		Route::get('{warehouse}/detail', [WarehouseStockController::class, 'Detail'])->name('warehouse_stock.detail');
-		
+		Route::get('{warehouse}/export', [WarehouseStockController::class, 'Export'])->name('warehouse_stock.export');
 	});
 
     // Route Incoming-Good
@@ -145,7 +145,10 @@ Route::group([ 'middleware' => 'auth' ], function(){
 
     Route::prefix('incoming-good-detail')->group(function(){
         Route::get('/', [incomingGoodDetailsController::class, 'index'])->name('item-incoming-good-details');
-        Route::delete('{incomingGoodDetail}/destroy', [incomingGoodDetailsController::class, 'destroy'])->name('incoming-good-detail.destroy');
+        Route::get('{incomingGoodDetail}/edit', [incomingGoodDetailsController::class, 'edit'])->name('incoming-good-detail.edit');
+        Route::put('{incomingGoodDetail}/update', [incomingGoodDetailsController::class, 'update'])->name('incoming-good-detail.update');
+        Route::get('{incomingGoods}/detail', [incomingGoodDetailsController::class, 'detail'])->name('incoming-goods.detail');
+		Route::delete('{incomingGoodDetail}/destroy', [incomingGoodDetailsController::class, 'destroy'])->name('incoming-good-detail.destroy');
     });
 
 
@@ -163,6 +166,9 @@ Route::group([ 'middleware' => 'auth' ], function(){
 	// detail Barang Keluar
 	Route::prefix('outgoing-good-detail')->group(function(){
 		Route::get('/', [OutgoingGoodsDetailController::class, 'index'])->name('item-outgoing-good-detail');
+		Route::get('{outgoingGoodDetail}/edit', [OutgoingGoodsDetailController::class, 'edit'])->name('outgoing-good-detail.edit');
+        Route::put('{outgoingGoodDetail}/update', [OutgoingGoodsDetailController::class, 'update'])->name('outgoing-good-detail.update');
+        Route::get('{outgoingGoods}/detail', [OutgoingGoodsDetailController::class, 'detail'])->name('outgoing-good-detail.detail');
         Route::delete('{outgoingGoodDetail}/destroy', [OutgoingGoodsDetailController::class, 'destroy'])->name('outgoing-good-detail.destroy');
     });
 

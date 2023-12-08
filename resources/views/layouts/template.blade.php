@@ -122,7 +122,7 @@
 											<div class="u-text">
 												<h4>{{ Auth::user()->name }}</h4>
 												<p class="text-muted">{{ Auth::user()->email }}</p><a
-													href="profile.html" class="btn btn-xs btn-secondary btn-sm">Lihat
+													href="{{ route('setting.profile') }}" class="btn btn-xs btn-secondary btn-sm">Lihat
 													Profile</a>
 											</div>
 										</div>

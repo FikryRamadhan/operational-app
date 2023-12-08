@@ -11,7 +11,6 @@ class IncomingGood extends Model
 {
     use HasFactory;
 
-
     protected $dates =['created_at', 'updated_at', 'date'];
     protected $guarded = [''];
 
@@ -73,7 +72,10 @@ class IncomingGood extends Model
     }
 
     public function removeIncomingGoodDetails(){
-        IncomingGoodDetail::where('id_incoming_good', $this->id)->delete();
+        foreach ($this->incomingGoodDetail as $key => $incomingGoodD) {
+            $incomingGoodD->removePhoto();
+            $incomingGoodD->delete();
+        }
         return $this;
     }
 
@@ -105,13 +107,6 @@ class IncomingGood extends Model
     public function getWarehouse(){
         return $this->warehouse?$this->warehouse->warehouse_name:"-";
     }
-
-    // public function getDateFormat()
-    // {
-    //     $date = $this->date;
-    //     return Carbon::getDateFormat('Y-m-d', $date)
-    //         ->date('d-m-Y');
-    // }
 
     // Data Table
     public static function dataTable(){

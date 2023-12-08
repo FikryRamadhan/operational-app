@@ -18,7 +18,7 @@ class OutgoingGoodsController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->ajax()){
+        if ($request->ajax()) {
             return OutgoingGood::dataTable();
         }
         return view('outgoing-good.index', [
@@ -30,7 +30,6 @@ class OutgoingGoodsController extends Controller
                 ]
             ]
         ]);
-
     }
 
     public function  create()
@@ -40,10 +39,11 @@ class OutgoingGoodsController extends Controller
             'breadcrumbs' => [
                 [
                     'title' => 'Barang Keluar',
-                    'link' => route('outgoing-goods.create') 
+                    'link' => route('outgoing-goods.create')
                 ]
             ],
-            'warehouse' => Warehouse::all()
+            'warehouse' => Warehouse::all(),
+            'outgoingGoodDetails' => OutgoingGoodDetail::all()
         ]);
     }
 
@@ -52,10 +52,9 @@ class OutgoingGoodsController extends Controller
         Validations::storeOutgoingGoods($request);
         DB::beginTransaction();
 
-        try{
+        try {
             $idWarehouse = $request->id_warehouse;
             $idProduct = $request->id_product;
-            
 
             // Outgoing Good Store
             $outgoingGood = OutgoingGood::storeOutgoingGood([
@@ -77,9 +76,10 @@ class OutgoingGoodsController extends Controller
             // For Product,warehouseStock, and Product=Stock
             $idOutgoingGood = $outgoingGood->id;
             $amount = $request->amount;
-            
+            $filePhoto = $request->file_photo;
+            // dd($filePhoto);
             // Warehouse Stock/OutgoinGood/IdProduct
-            for ($i = 0; $i < count($idProduct); $i++){
+            for ($i = 0; $i < count($idProduct); $i++) {
                 $dataWarehouse = [
                     'idWarehouse' => $idWarehouse,
                     'idProduct' => $idProduct[$i],
@@ -90,22 +90,23 @@ class OutgoingGoodsController extends Controller
                     'idProduct' => $idProduct[$i],
                     'amount' => $amount[$i],
                 ];
-                $dataStockProduct = [
-                    'idProduct' => $idProduct[$i],
-                    'stock' => $amount[$i],
-                ];
-
-
+                
+                
                 WarehouseStock::storeOutGoingGoodWarehouseStock($dataWarehouse);
-                $outgoingGoodDetail = OutgoingGoodDetail::storeOutgoingGoodDetail($dataOutgoinGoodDetail);
-                $outgoingGoodDetail->product->perhitunganUlangStockProduct();
+                $outgoingGoodDetails = OutgoingGoodDetail::storeOutgoingGoodDetail($dataOutgoinGoodDetail);
+                if($request->file('file_photo')){
+                    if(isset($filePhoto[$i])){
+                        $outgoingGoodDetails->saveFile($filePhoto[$i]);
+                    }
+                }
+                $outgoingGoodDetails->product->perhitunganUlangStockProduct();
             }
 
 
             DB::commit();
 
             return Response::save();
-        } catch(\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
 
             return Response::error($e);
@@ -115,7 +116,7 @@ class OutgoingGoodsController extends Controller
     public function edit(OutgoingGood $outgoingGoods)
     {
         $outgoingGoodDetails = OutgoingGoodDetail::where('id_outgoing_good', $outgoingGoods->id)->get();
-        return view('outgoing-good.edit',[
+        return view('outgoing-good.edit', [
             'title' => 'Edit Barang Keluar',
             'outgoingGoods' => $outgoingGoods,
             'outgoingGoodDetails' => $outgoingGoodDetails,
@@ -135,8 +136,7 @@ class OutgoingGoodsController extends Controller
         Validations::storeOutgoingGoods($request, $outgoingGoods->id);
         DB::beginTransaction();
 
-        try 
-        {
+        try {
             $idWarehouse = $outgoingGoods->id_warehouse;
 
             $outgoingGoods->updateOutgoinGood([
@@ -146,73 +146,25 @@ class OutgoingGoodsController extends Controller
                 'description' => $request->description
             ]);
 
-            // ambil dulu data yang lama
-            foreach($outgoingGoods->outGoingGoodDetail as $detail){
-                $warehouseStock = WarehouseStock::where('id_warehouse', $idWarehouse)
-                ->where('id_product', $detail->id_product)->first();
-                $warehouseStock->update([
-                    'stock' => $warehouseStock->stock + $detail->amount, 
-                ]);
-                $detail->product->perhitunganUlangStockProduct();
-            }
-
-            OutgoingGoodDetail::where('id_outgoing_good', $outgoingGoods->id)->delete();
-
-            
-
-            // for product dan Outgoingoods
-            $idProduct = $request->id_product;
-            $idOutgoingGood = $outgoingGoods->id;
-            $amount = $request->amount;
-
-            for($i = 0; $i < count($idProduct); $i++ ){
-                $warehouseStock = WarehouseStock::where('id_warehouse', $request->id_warehouse)
-                ->where('id_product', $idProduct[$i])->first();
-                if($warehouseStock){
-                    $warehouseStock->update([
-                        'stock' => $warehouseStock->stock - $amount[$i]
-                    ]);
-                }else{
-                    WarehouseStock::storeWarehouseStock([
-                        'idWarehouse' => $idWarehouse,
-                        'idProduct' => $idProduct[$i],
-                        'stock' => $amount[$i],
-                    ]);
-                }
-
-                $dataOutgoingGoodDetail = [
-                    'idOutgoingGood' => $idOutgoingGood ,
-                    'idProduct' => $idProduct[$i],
-                    'amount' => $amount[$i]
-                ];
-
-                $outgoingGoodDetail = OutgoingGoodDetail::storeOutgoingGoodDetail($dataOutgoingGoodDetail);
-                $outgoingGoodDetail->product->perhitunganUlangStockProduct();
-            }
-
             DB::commit();
             return Response::update();
-
-        } catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return Response::error($e);
         }
     }
-     
+
     public function destroy(OutgoingGood $outgoingGoods)
     {
         DB::beginTransaction();
 
-        try
-        {
+        try {
             $outgoingGoods->deleteOutgoinGood();
             DB::commit();
 
             return Response::delete();
-        } catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
             DB::rollBack();
 
             return Response::error($e);

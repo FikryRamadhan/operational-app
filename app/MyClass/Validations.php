@@ -272,28 +272,56 @@ class Validations
 			'date' => 'required',
 			'id_warehouse' => 'required',
 			'id_supplier' => 'required',
-			// 'amount[]' => 'required',
-
+			'amount.*' => 'required',
+			'file_photo.*' => 'nullable|mimes:jpg,jpeg,png',
 		], [
 			'transaction_number.required' => 'No.Transaksi Harus Diisi',
 			'date.required' => 'Tanggal Pengiriman Wajib Diisi',
 			'id_supplier.required' => 'Supplier Harus Diisi',
 			'id_warehouse.required' => 'Gudang Harus Diisi',
-			'amount[].required' => 'Jumlah Barang Wajib Diisi Wajib Diisi',
+			'amount.*.required' => 'Jumlah Barang Wajib Diisi Wajib Diisi',
+			'file_photo.*.mimes' => 'File Harus Berupa jpg,jpeg,png',
 		]);
 	}
+	
+	public static function updateIncomningDetail($request) {
+		$request->validate([
+			'id_product' => 'required',
+			'amount' => 'required',
+			'file_photo' => 'nullable|mimes:pdf,jpg,jpeg,png'
+		],[
+			'id_product.required' => 'Produk Wajib Diisi',
+			'amount.required' => 'Jumlah Wajib Diisi',
+			'file_photo.mimes' => 'Format File harus pdf atau gambar'
+		]);
+	}
+
+	public static function updateOutgoingGoodDetail($request) {
+		$request->validate([
+			'id_product' => 'required',
+			'amount' => 'required',
+			'file_photo' => 'nullable|mimes:pdf,jpg,jpeg,png'
+		],[
+			'id_product.required' => 'Produk Wajib Diisi',
+			'amount.required' => 'Jumlah Wajib Diisi',
+			'file_photo.mimes' => 'Format File harus pdf atau gambar'
+		]);
+	}
+
 	public static function storeOutgoingGoods($request){
 		$request->validate([
 			'transaction_number' => 'required',
 			'date' => 'required',
 			'id_warehouse' => 'required',
-			// 'amount[]' => 'required',
+			'amount.*' => 'required',
+			'file_photo.*' => 'nullable|mimes:jpg,jpeg,png',
 
 		], [
 			'transaction_number.required' => 'No.Transaksi Harus Diisi',
 			'date.required' => 'Tanggal Pengiriman Wajib Diisi',
 			'id_warehouse.required' => 'Gudang Harus Diisi',
-			'amount[].required' => 'Jumlah Barang Wajib Diisi Wajib Diisi',
+			'amount.*.required' => 'Jumlah Barang Wajib Diisi Wajib Diisi',
+			'file_photo.*.mimes' => 'File Harus Berupa jpg,jpeg,png',
 		]);
 	}
 
@@ -302,13 +330,14 @@ class Validations
 			'transaction_number' => 'required',
 			'date' => 'required',
 			'id_warehouse' => 'required',
-			// 'amount[]' => 'required',
-
+			'amount.*' => 'required',
+			'file_photo.*' => 'nullable|mimes:jpg,jpeg,png',
 		], [
 			'transaction_number.required' => 'No.Transaksi Harus Diisi',
 			'date.required' => 'Tanggal Pengiriman Wajib Diisi',
 			'id_warehouse.required' => 'Gudang Harus Diisi',
-			'amount[].required' => 'Jumlah Barang Wajib Diisi Wajib Diisi',
+			'amount.*.required' => 'Jumlah Barang Wajib Diisi Wajib Diisi',
+			'file_photo.*.mimes' => 'File Harus Berupa jpg,jpeg,png',
 		]);
 	}
 

@@ -11,8 +11,9 @@ use App\MyClass\Validations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Exceptions\Exception;
-
+use File;
 class ProductController extends Controller
 {
     /**
@@ -91,11 +92,10 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         Validations::validateProductUpdate($request);
-        DB::beginTransaction();
-
+        
         try{
-            $product->removeProductPhoto();
-            $product->productUpdate($request->all());
+            DB::beginTransaction();
+            $product->productUpdate($request->except(['file_photo']));
             $product->saveFile($request);
             DB::commit();
 

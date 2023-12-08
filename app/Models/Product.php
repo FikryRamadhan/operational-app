@@ -10,29 +10,33 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+	use HasFactory;
+	use SoftDeletes;
 
-    protected $guarded = [''];
+	protected $guarded = [''];
 
-    public static function productCreate($request){
-        $product =  self::create($request);
-        return $product;
-    }
+	public static function productCreate($request)
+	{
+		$product =  self::create($request);
+		return $product;
+	}
 
-    public function productUpdate(array $request){
+	public function productUpdate($request)
+	{
+		$this->update($request);
+
+		return $this;
+	}
+
+	public function productDestroy()
+	{
 		$this->removeProductPhoto();
-        $this->update($request);
-        return $this ;
-    }
+		return $this->delete();
+	}
 
-    public function productDestroy(){
-		$this->removeProductPhoto();
-        return $this->delete();
-    }
-
-	public function perhitunganUlangStockProduct(){
-		if($this->warehouseStock){
+	public function perhitunganUlangStockProduct()
+	{
+		if ($this->warehouseStock) {
 			$totalStock = $this->warehouseStock->sum('stock');
 			$this->update([
 				'stock' => $totalStock
@@ -40,56 +44,36 @@ class Product extends Model
 		}
 	}
 
-	// public static function checkProduct(array $data)
-	// {
-	// 	$idProduct = $data['idProduct'];
-	// 	return self::where('id', $idProduct)->first();
-	// }
-
-	// public static function storeStockProduct(array $data){
-	// 	$stock = $data['stock'];
-	// 	$oldStock = 0;
-
-	// 	$stockProduct= self::checkProduct($data);
-
-	// 	$oldStock = $stockProduct->stock;
-
-	// 	$totalStock = $oldStock + $stock;
-
-	// 	$stockProduct->update([
-	// 		'stock' => $totalStock
-	// 	]);
-
-	// 	return $stockProduct;
-	// }
-
 	// Relationship
-	public function brand(){
-        return $this->belongsTo(Brand::class, 'id_brand')->withTrashed();
-    }
-
-    public function productType(){
-        return $this->belongsTo(ProductType::class, 'id_product_type')->withTrashed();
-    }
-    public function warehouseStock(){
-        return $this->hasMany(WarehouseStock::class, 'id_product');
-    }
-
-	// Upload Photo To Storage
-    public function productFilePath()
+	public function brand()
 	{
-		return storage_path('app/public/product_photo/'.$this->file_photo);
+		return $this->belongsTo(Brand::class, 'id_brand')->withTrashed();
 	}
 
-    public function productPhotoFileLink()
+	public function productType()
 	{
-		return url('storage/product_photo/'.$this->file_photo);
+		return $this->belongsTo(ProductType::class, 'id_product_type')->withTrashed();
+	}
+	public function warehouseStock()
+	{
+		return $this->hasMany(WarehouseStock::class, 'id_product');
+	}
+
+	// Upload Photo To Storage
+	public function productFilePath()
+	{
+		return storage_path('app/public/product_photo/' . $this->file_photo);
+	}
+
+	public function productPhotoFileLink()
+	{
+		return url('storage/product_photo/' . $this->file_photo);
 	}
 
 	public function productFileLinkHtml()
 	{
-		if($this->isHasProductPhoto()) {
-			$href = '<a href="'.$this->productPhotoFileLink().'" target="_blank"> Lihat Photo Product </a>';
+		if ($this->isHasProductPhoto()) {
+			$href = '<a href="' . $this->productPhotoFileLink() . '" target="_blank"> Lihat Photo Product </a>';
 			return $href;
 		} else {
 			return '<span class="text-danger"> Tidak Melampirkan Photo </span>';
@@ -98,13 +82,13 @@ class Product extends Model
 
 	public function isHasProductPhoto()
 	{
-		if(empty($this->file_photo)) return false;
+		if (empty($this->file_photo)) return false;
 		return \File::exists($this->productFilePath());
 	}
 
 	public function removeProductPhoto()
 	{
-		if($this->isHasProductPhoto()) {
+		if ($this->isHasProductPhoto()) {
 			\File::delete($this->productFilePath());
 			$this->update([
 				'file_photo' => null
@@ -116,11 +100,11 @@ class Product extends Model
 
 	public function saveFile($request)
 	{
-		if($request->hasFile('file_photo')) {
+		if ($request->hasFile('file_photo')) {
 			$this->removeProductPhoto();
 			$file = $request->file('file_photo');
-			$filename = date('YmdHis_').$file->getClientOriginalName();
-			$file->move(storage_path('app/public/product_photo'), $filename);
+			$filename = date('YmdHis_') . $file->getClientOriginalName();
+			$file->move(storage_path('app/public/product_photo/'), $filename);
 			$this->update([
 				'file_photo' => $filename,
 			]);
@@ -131,34 +115,37 @@ class Product extends Model
 
 
 	// For Data Table
-	public function getBrandName(){
-		return $this->brand?$this->brand->brand_name:'-';
+	public function getBrandName()
+	{
+		return $this->brand ? $this->brand->brand_name : '-';
 	}
 
-	public function getProductTypeName(){
-		return $this->productType?$this->productType->product_type_name:'-';
+	public function getProductTypeName()
+	{
+		return $this->productType ? $this->productType->product_type_name : '-';
 	}
-	public function getProduct(){
-		return $this->product?$this->product->product_name:'-';
+	public function getProduct()
+	{
+		return $this->product ? $this->product->product_name : '-';
 	}
 
 
-    public static function dataTable($request)
-    {
-        $data = self::select([ 'products.*' ])
-        ->with('brand', 'productType',)
-        ->leftJoin('brands', 'products.id_brand', '=', 'brands.id')
-        ->leftJoin('product_types', 'products.id_product_type', '=', 'product_types.id');
+	public static function dataTable($request)
+	{
+		$data = self::select(['products.*'])
+			->with('brand', 'productType',)
+			->leftJoin('brands', 'products.id_brand', '=', 'brands.id')
+			->leftJoin('product_types', 'products.id_product_type', '=', 'product_types.id');
 
-        return \DataTables::eloquent($data)
-            ->addColumn('action', function ($data) {
-                $action = '
+		return \DataTables::eloquent($data)
+			->addColumn('action', function ($data) {
+				$action = '
                 	<div class="dropdown">
 						<button class="btn btn-primary px-2 py-1 dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 							Pilih Aksi
 						</button>
 						<div class="dropdown-menu">
-                           <a class="dropdown-item" href="'.route('product.detail', $data->id).'">
+                           <a class="dropdown-item" href="' . route('product.detail', $data->id) . '">
 								<i class="fas fa-search mr-1"></i> Detail
 							</a>
 							<a class="dropdown-item edit" href="javascript:void(0);" data-edit-href="' . route('product.update', $data->id) . '" data-get-href="' . route('product.get', $data->id) . '">
@@ -170,77 +157,76 @@ class Product extends Model
 						</div>
 					</div>
                 ';
-                return $action;
-            })
-            ->editColumn('brand.brand_name', function($data){
-                return $data->getBrandName();
-            })
-            ->editColumn('productType.product_type_name', function($data){
-                return $data->getProductTypeName();
-            })
-			->editColumn('file_photo', function($data){
+				return $action;
+			})
+			->editColumn('brand.brand_name', function ($data) {
+				return $data->getBrandName();
+			})
+			->editColumn('productType.product_type_name', function ($data) {
+				return $data->getProductTypeName();
+			})
+			->editColumn('file_photo', function ($data) {
 				return $data->productFileLinkHtml();
 			})
-            ->rawColumns(['action', 'file_photo'])
-            ->make(true);
-    }
+			->rawColumns(['action', 'file_photo'])
+			->make(true);
+	}
 
 	// Import Excel
-    public static function importProductFromExcel($request){
-        return self::importFromExcel($request);
-    }
+	public static function importProductFromExcel($request)
+	{
+		return self::importFromExcel($request);
+	}
 
-    public static function importFromExcel($request){
-        $amount = 0;
+	public static function importFromExcel($request)
+	{
+		$amount = 0;
 
-		if(!empty($request->file_excel))
-		{
+		if (!empty($request->file_excel)) {
 			$file = $request->file('file_excel');
-			$filename = date('YmdHis_').rand(100,999).'.'.$file->getClientOriginalExtension();
+			$filename = date('YmdHis_') . rand(100, 999) . '.' . $file->getClientOriginalExtension();
 			$file->move(storage_path('app/public/temp_files'), $filename);
-			$path = storage_path('app/public/temp_files/'.$filename);
+			$path = storage_path('app/public/temp_files/' . $filename);
 			$parseData = \App\MyClass\SimpleXLSX::parse($path);
 
-			if($parseData)
-			{
+			if ($parseData) {
 				$iter = 0;
-				foreach($parseData->rows() as $row)
-				{
+				foreach ($parseData->rows() as $row) {
 					$iter++;
-					if($iter == 1) continue;
+					if ($iter == 1) continue;
 
-					if(!empty($row[0])) {
+					if (!empty($row[0])) {
 						$product = self::where('product_name', $row[0])
-										->first();
+							->first();
 
-                        // Check
-                        $brand = Brand::checkBrand($row[2]);
+						// Check
+						$brand = Brand::checkBrand($row[2]);
 						// Dan Create Brand
-                        if(!$brand){
-                            $brand = Brand::buatBrand($row[2]);
-                        }
+						if (!$brand) {
+							$brand = Brand::buatBrand($row[2]);
+						}
 
-                        $idBrand = $brand->id;
+						$idBrand = $brand->id;
 
-                        // Check dan create ProductType
-                        $productType = ProductType::checkProductType($row[3]);
+						// Check dan create ProductType
+						$productType = ProductType::checkProductType($row[3]);
 
-                        if(!$productType) {
-                            $productType =  ProductType::buatProductType($row[3]);
-                        }
+						if (!$productType) {
+							$productType =  ProductType::buatProductType($row[3]);
+						}
 
-                        $idProductType = $productType->id;
+						$idProductType = $productType->id;
 
-						if(!$product) {
+						if (!$product) {
 							DB::beginTransaction();
 							try {
 								self::create([
-									'product_name'=> $row[0],
-                                    'model_name'=> $row[1],
-                                    'id_brand' => $idBrand,
-                                    'id_product_type' => $idProductType,
-                                    'minimal_stock' => $row[4],
-                                    'description' => $row[5]
+									'product_name' => $row[0],
+									'model_name' => $row[1],
+									'id_brand' => $idBrand,
+									'id_product_type' => $idProductType,
+									'minimal_stock' => $row[4],
+									'description' => $row[5]
 								]);
 
 								$amount++;
@@ -256,25 +242,26 @@ class Product extends Model
 			\File::delete($path);
 		}
 		return $amount;
-    }
+	}
 
-	public static function sendNotificationStock(){
+	public static function sendNotificationStock()
+	{
 		$stocks = WarehouseStock::getStockToWhatsapp();
-        if($stocks->count() > 0){
-            $message = "Pemberitahuan*\nSudah Ada barang Yang Kurang Dari Minimal Stock,Berikut Daftar Produk Nya:";
-            foreach($stocks as  $key => $stock){
-                $message .="\n\n- ".$key.": ";
-                foreach($stock as $s) {
-                    $message .="\n-> ".$s->product->product_name ." Dengan Stock ".$s->stock;
-                };
-            };
-            $message .= "\n\nTerima Kasih Atas Perhatiannya🙏";
-            
-            \App\MyClass\Whatsapp::sendChat([
-                'to'	=> '6282316425264',
-                'text'	=> $message
-            ]);
-		} 
+		if ($stocks->count() > 0) {
+			$message = "Pemberitahuan*\nSudah Ada barang Yang Kurang Dari Minimal Stock,Berikut Daftar Produk Nya:";
+			foreach ($stocks as  $key => $stock) {
+				$message .= "\n\n- " . $key . ": ";
+				foreach ($stock as $s) {
+					$message .= "\n-> " . $s->product->product_name . " Dengan Stock " . $s->stock;
+				};
+			};
+			$message .= "\n\nTerima Kasih Atas Perhatiannya🙏";
+
+			\App\MyClass\Whatsapp::sendChat([
+				'to'	=> '6282316425264',
+				'text'	=> $message
+			]);
+		}
 		// else {
 		// 	$message = "Stok Produk Masih Aman";
 		// 	\App\MyClass\Whatsapp::sendChat([
@@ -282,5 +269,5 @@ class Product extends Model
 		// 		'text'	=> $message
 		// 	]);
 		// }
-		}
+	}
 }

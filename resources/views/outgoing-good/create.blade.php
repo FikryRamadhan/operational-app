@@ -14,7 +14,7 @@
                     </h4>
                 </div>
 
-                <form id="formCreate">
+                <form id="formCreate" enctype="multipart/form-data">
                     <div class="card-body">
                         {!! Template::requiredBanner() !!}
                         <div class="row">
@@ -74,6 +74,7 @@
                                     <tr>
                                         <th> Produk </th>
                                         <th> Jumlah </th>
+                                        <th> Foto Produk (Opsional)</th>
                                         <th> Aksi </th>
                                     </tr>
                                 </thead>
@@ -82,7 +83,7 @@
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td colspan="2" align="right">
+                                        <td colspan="4" align="right">
                                             <button type="button" class="btn btn-primary btn-sm" id="add-product-item">
                                                 <i class="fas fa-plus mr-2"></i> Tambah
                                             </button>
@@ -120,7 +121,7 @@
             e.preventDefault()
             clearInvalid()
 
-            let formData = $(this).serialize()
+            let formData = new FormData(this)
             $formCreateSubmitBtn.ladda('start')
 
             ajaxSetup();
@@ -128,7 +129,9 @@
                 url: "{{ route('outgoing-goods.store') }}",
                 method: 'POST',
                 data: formData,
-                dataType: 'json'
+                dataType: 'json',
+                contentType: false,
+                processData: false
             })
             .done(response => {
                 const url = "{{ route('outgoing-goods') }}"
@@ -214,6 +217,10 @@
         </td>
         <td>
             <input type="number" name="amount[]" class="form-control amount">
+            <span class="invalid-feedback"></span>
+        </td>
+        <td>
+            <input type="file" name="file_photo[]" class="form-control file_photo">
             <span class="invalid-feedback"></span>
         </td>
         <td>

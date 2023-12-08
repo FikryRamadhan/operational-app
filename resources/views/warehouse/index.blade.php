@@ -293,6 +293,7 @@
                                 $modalUpdate.modal('show')
                                 $formUpdate.attr('action', editHref)
                                 $formUpdate.find(`[name="warehouse_name"]`).val(warehouse.warehouse_name);
+                                $formUpdate.find(`[name="description"]`).val(warehouse.description);
                                 formSubmit(
                                     $modalUpdate,
                                     $formUpdate,

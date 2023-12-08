@@ -40,6 +40,9 @@
                     <span class="d-inline-block">
                         Daftar Produk
                     </span>
+                    <div class="float-right">
+                        <a class="btn btn-primary mr-2" href="{{ route('warehouse_stock.export', $warehouse->id) }}" ><i class="fa fa-download"></i>  Export</a>
+                    </div>
                 </h4>
             </div>
             <div class="card-body">
@@ -73,6 +76,16 @@
 <script>
     $(function() {
             $('#dataTable').DataTable()
-        })
+
+            $('#btn-export').on('click', function(e) {
+                e.preventDefault()
+
+                $.ajax({
+                    url: `{{ route('warehouse_stock.export', $warehouse->id) }}`,
+                    method: 'get',
+                    dataType: 'json',
+                })
+            })
+    })
 </script>
 @endsection

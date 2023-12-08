@@ -5,14 +5,15 @@
 
         <div class="col-lg-12">
             <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <span class="d-inline-block">
+                            {{ $title ?? 'Judul' }}
+                        </span>
+                    </h4>
+                </div>
+
                 <div class="card-body">
-                    <div class="card-header">
-                        <h4 class="card-title ">
-                            <span>
-                                Item Barang Keluar
-                            </span>
-                        </h4>
-                    </div>
                     <div class="table-responsive">
                         <table class="table table-bordered" id="dataTable">
                             <thead>
@@ -41,7 +42,6 @@
 
     </div>
 @endsection
-
 
 @section('scripts')
     <script>
@@ -85,3 +85,12 @@
         })
     </script>
 @endsection
+
+
+
+
+
+
+
+
+

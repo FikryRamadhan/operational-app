@@ -349,9 +349,6 @@
             const $formCreateSubmitBtn = $formCreate.find(`[type="submit"]`).ladda();
             const $formUpdateSubmitBtn = $formUpdate.find(`[type="submit"]`).ladda();
 
-
-
-
             $formCreate.find(`[name="id_brand"]`).select2({
                 dropdownParent: $modalCreate,
                 placeholder: '-- Pilih Merek --',

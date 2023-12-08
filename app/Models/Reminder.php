@@ -199,7 +199,7 @@ class Reminder extends Model
             ->whereHas('reminder', function($q){
                 $q->where('status', 'Belum Di Selesaikan');
             })
-			->where('reminder_time', 'like', '%' . date('Y-m-d 00:00:00') . '%')
+			->where('reminder_time', 'like', '%' . date('Y-m-d H:i:s') . '%')
 			->get();
 
 

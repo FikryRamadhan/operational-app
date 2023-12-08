@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Http\UploadedFile;
 
 class IncomingGoodDetail extends Model
 {
@@ -25,7 +26,7 @@ class IncomingGoodDetail extends Model
         $idIncomingGood = $data['idIncomingGood'];
         $idProduct = $data['idProduct'];
         $amount = $data['amount'];
-
+        
         return self::create([
             'id_incoming_good' => $idIncomingGood,
             'id_product' => $idProduct,
@@ -33,9 +34,14 @@ class IncomingGoodDetail extends Model
         ]);
     }
 
+    public function updateIncomingGoodDetail($request){
+        return $this->update($request);
+    }
+
     public function deleteIncomingGoodDetail(){
         $this->removeStockProduct();
         $this->removeStockWarehouse();
+        $this->removePhoto();
         $this->delete();
         return $this;
     }
@@ -76,6 +82,55 @@ class IncomingGoodDetail extends Model
         }
     }
 
+    // Save File Photo
+    public function productFilePath()
+	{
+		return storage_path('app/public/incoming_good_detail_file_photo/'.$this->file_photo);
+	}
+
+	public function isHasProductPhoto()
+	{
+		if(empty($this->file_photo)) return false;
+		return \File::exists($this->productFilePath());
+	}
+
+	public function removePhoto()
+	{
+		if($this->isHasProductPhoto()) {
+			\File::delete($this->productFilePath());
+			$this->update([
+				'file_photo' => null
+			]);
+		}
+
+		return $this;
+	}
+
+	public  function saveFile($file)
+	{
+		if($file) {
+			if(!empty($file)){
+                $this->removePhoto();
+            }
+            $filename = date('YmdHis_').rand(100,999)."_".$file->getClientOriginalName();
+            $imageUrl = $file;
+            $filePath = 'incoming_good_detail_file_photo/'.$filename;
+            $deleteImageAfter = false;
+                    // Make Image
+            $image = new \App\MyClass\ImageHelper($imageUrl, $filePath, $deleteImageAfter);
+
+            $imageWidth = 1080;
+            $image->compressImage($imageWidth)
+                ->saveImage();
+            $this->update([
+				'file_photo' => $filename,
+			]);
+		}
+
+		return $this;
+	}
+
+
     // Data Table 
     public static function dataTable(){
         $data = self::select([ 'incoming_good_details.*', 'products.*' , 'product_types.*' ])
@@ -83,7 +138,6 @@ class IncomingGoodDetail extends Model
         ->leftJoin('products', 'incoming_good_details.id_product', '=', 'products.id')
         ->leftJoin('incoming_goods', 'incoming_good_details.id_incoming_good', '=', 'incoming_goods.id')
         ->leftJoin('product_types', 'products.id_product_type', '=', 'product_types.id');
-
 
         return DataTables::eloquent($data)
         

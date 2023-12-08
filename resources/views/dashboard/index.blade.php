@@ -75,7 +75,7 @@
 	</div>
 
 	<div class="row">
-		<div class="col-lg-9">
+		<div class="col-lg-12">
 			<div class="card">
 				<div class="card-header">
 					<h4 class="card-title"> 
@@ -122,7 +122,7 @@
 	@if ($warehouseStock->count() > 0)
 		<div class="row">
 
-			<div class="col-lg-9">
+			<div class="col-lg-12">
 				<div class="card">
 					<div class="card-body">
 						<div class="card-header">
