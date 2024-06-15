@@ -43,3 +43,9 @@ Start the server
 
 ```bash
   php artisan serve
+```
+
+## Fikry Ramadhan
+
+- [fikryramadhan572@gmail.com]
+- (https://fikryramadhan.vercel.app)
